@@ -1,0 +1,45 @@
+{
+  "name": "db-assistant",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@ant-design/icons": "^5.1.4",
+    "@types/node": "18.15.11",
+    "@types/react": "18.0.34",
+    "@types/react-dom": "18.0.11",
+    "antd": "^5.4.1",
+    "autoprefixer": "10.4.14",
+    "mustache": "^4.2.0",
+    "next": "13.3.0",
+    "openai": "^4.19.0",
+    "pg": "^8.11.3",
+    "postcss": "8.4.21",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-markdown": "^8.0.7",
+    "react-syntax-highlighter": "^15.5.0",
+    "remark-gfm": "^3.0.1",
+    "zustand": "^4.3.8"
+  },
+  "devDependencies": {
+    "@types/mustache": "^4.2.2",
+    "@types/pg": "^8.10.9",
+    "@types/react-syntax-highlighter": "^15.5.7",
+    "@typescript-eslint/eslint-plugin": "^5.58.0",
+    "@typescript-eslint/parser": "^5.58.0",
+    "eslint": "8.38.0",
+    "eslint-config-next": "13.3.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-simple-import-sort": "^10.0.0",
+    "prettier": "^2.8.7",
+    "tailwindcss": "3.3.1",
+    "typescript": "5.0.4"
+  }
+}
