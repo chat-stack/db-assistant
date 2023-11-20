@@ -14,6 +14,8 @@ interface ISettingState {
   setPostgresPassword: (password: string) => void;
   postgresPort: string;
   setPostgresPort: (port: string) => void;
+  assistantId: string;
+  setAssistantId: (id: string) => void;
 }
 
 const useSettingStore = create<ISettingState>()(
@@ -30,8 +32,10 @@ const useSettingStore = create<ISettingState>()(
         setPostgresDatabase: (database) => set({ postgresDatabase: database }),
         postgresPassword: '',
         setPostgresPassword: (password) => set({ postgresPassword: password }),
-        postgresPort: '',
+        postgresPort: '5432',
         setPostgresPort: (port) => set({ postgresPort: port }),
+        assistantId: '',
+        setAssistantId: (id) => set({ assistantId: id }),
       }),
       {
         name: 'setting-storage',

@@ -37,11 +37,13 @@ const get_entity_relations = async (
     pg_attribute b ON b.attnum = ANY(c.confkey) AND b.attrelid = c.confrelid
   WHERE
     contype = 'f'
-    AND conrelid::regclass = '$1'::regclass;`,
+    AND conrelid::regclass = $1::regclass;`,
     [tableName]
   );
 
-  pgClient.end();
+  await pgClient.end();
+
+  console.log({ function: 'get_entity_relations', data });
 
   return {
     tool_call_id: tool_call.id,
@@ -53,14 +55,16 @@ const get_entity_relations = async (
   };
 };
 
-const get_table_schema_ddl = async (
+export const get_table_schema = async (
   tool_call: OpenAI.Beta.Threads.Runs.RequiredActionFunctionToolCall
 ): Promise<OpenAI.Beta.Threads.Runs.RunSubmitToolOutputsParams.ToolOutput> => {
+  console.log('executing get_table_schema');
   const args: IGetTableSchemaDdlArgs = JSON.parse(tool_call.function.arguments);
   let tableName = args.table_name;
   if (args.table_name.includes('"')) {
     tableName = args.table_name.replace(/"/g, '');
   }
+  console.log(tableName);
   const pgClient = getPostgresClient();
   await pgClient.connect();
   const data = await pgClient.query(
@@ -72,17 +76,18 @@ const get_table_schema_ddl = async (
     information_schema.columns
   WHERE
     table_schema = 'public'
-    AND table_name   = '$1';`,
+    AND table_name = $1;`,
     [tableName]
   );
+  console.log({ function: 'get_table_schema', data });
 
-  pgClient.end();
+  await pgClient.end();
 
   return {
     tool_call_id: tool_call.id,
     output: JSON.stringify(
       { schema: data.rows } || {
-        success: 'false',
+        success: 'false data',
       }
     ),
   };
@@ -95,8 +100,8 @@ export const dispatchToolCall = async (
     switch (tool_call.function.name) {
       case 'get_entity_relations':
         return get_entity_relations(tool_call);
-      case 'get_table_schema_ddl':
-        return get_table_schema_ddl(tool_call);
+      case 'get_table_schema':
+        return get_table_schema(tool_call);
       default:
         break;
     }

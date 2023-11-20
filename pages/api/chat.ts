@@ -66,7 +66,7 @@ const handler = async (
       });
     }
     const run = await openai.beta.threads.runs.create(thread.id, {
-      assistant_id: 'asst_4jYNnW5NVzZVDg7zDf6vtdVF',
+      assistant_id: 'asst_Pp9OnpqM9oohvAnzmmciq15T',
     });
     const pollingHandler = async () => {
       const retrievedRun = await openai.beta.threads.runs.retrieve(

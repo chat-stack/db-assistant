@@ -1,5 +1,6 @@
 import { Button, Form, Input } from 'antd';
 import Head from 'next/head';
+import OpenAI from 'openai';
 import { useState } from 'react';
 
 import useSettingStore from '@/stores/setting.store';
@@ -18,6 +19,8 @@ export default function Settings() {
     setPostgresPassword,
     postgresPort,
     setPostgresPort,
+    assistantId,
+    setAssistantId,
   } = useSettingStore((state) => ({
     openAiApiKey: state.openAiApiKey,
     setOpenAiApiKey: state.setOpenAiApiKey,
@@ -31,6 +34,8 @@ export default function Settings() {
     setPostgresPassword: state.setPostgresPassword,
     postgresPort: state.postgresPort,
     setPostgresPort: state.setPostgresPort,
+    assistantId: state.assistantId,
+    setAssistantId: state.setAssistantId,
   }));
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -51,8 +56,8 @@ export default function Settings() {
         postgresPort,
       }),
     });
-    const data = await response.json();
-    console.log(data);
+    const assistant: OpenAI.Beta.Assistants.Assistant = await response.json();
+    setAssistantId(assistant.id);
     setIsSubmitting(false);
   };
 
@@ -122,6 +127,13 @@ export default function Settings() {
             <Button type="primary" htmlType="submit" loading={isSubmitting}>
               Create DB Assistant
             </Button>
+          </Form.Item>
+          <Form.Item label="Assistant ID" className="w-[64rem] max-w-full">
+            <Input
+              placeholder="Enter Assistant ID"
+              value={assistantId}
+              disabled
+            />
           </Form.Item>
         </Form>
       </main>
