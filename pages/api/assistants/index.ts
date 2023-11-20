@@ -1,11 +1,17 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import OpenAI from 'openai';
-
-import { getPostgresClient } from '../postgres-client';
+import { Client } from 'pg';
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
-    const { apiKey } = req.body;
+    const {
+      apiKey,
+      postgresUser,
+      postgresHost,
+      postgresDatabase,
+      postgresPassword,
+      postgresPort,
+    } = req.body;
     if (!apiKey) {
       res
         .status(400)
@@ -16,18 +22,27 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       apiKey,
     });
 
-    const pgClient = getPostgresClient();
+    const pgClient = new Client({
+      user: postgresUser,
+      host: postgresHost,
+      database: postgresDatabase,
+      password: postgresPassword,
+      port: +postgresPort,
+    });
     await pgClient.connect();
+
     const data = await pgClient.query<{ tablename: string }>(
       `SELECT tablename
       FROM pg_catalog.pg_tables
       WHERE schemaname = 'public';`
     );
     pgClient.end();
+
     const tableNames = data.rows.map((row) => {
       return row.tablename;
       ``;
     });
+
     const myAssistant = await openai.beta.assistants.create({
       instructions: `You are a postgres sql generator. Reply with postgres SQL query without running it.
         
