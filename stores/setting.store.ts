@@ -2,20 +2,16 @@ import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
 
 interface ISettingState {
-  chatGptApiKey: string;
-  maxTokens: number;
-  setChatGptApiKey: (apiKey: string) => void;
-  setMaxTokens: (maxTokens: number) => void;
+  openAiApiKey: string;
+  setOpenAiApiKey: (apiKey: string) => void;
 }
 
 const useSettingStore = create<ISettingState>()(
   devtools(
     persist(
       (set) => ({
-        chatGptApiKey: '',
-        setChatGptApiKey: (apiKey) => set({ chatGptApiKey: apiKey }),
-        maxTokens: 256,
-        setMaxTokens: (maxTokens) => set({ maxTokens }),
+        openAiApiKey: '',
+        setOpenAiApiKey: (apiKey) => set({ openAiApiKey: apiKey }),
       }),
       {
         name: 'setting-storage',

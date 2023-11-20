@@ -1,10 +1,6 @@
 import 'tailwindcss/tailwind.css';
 
-import {
-  BulbOutlined,
-  DatabaseOutlined,
-  SettingOutlined,
-} from '@ant-design/icons';
+import { DatabaseOutlined, SettingOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { Layout, Menu } from 'antd';
 import { AppProps } from 'next/app';
@@ -30,7 +26,6 @@ function getItem(
 }
 
 const items: MenuItem[] = [
-  getItem('Prompts', '/prompts', <BulbOutlined />),
   getItem('DB Chat', '/db-chat', <DatabaseOutlined />),
   getItem('Settings', '/settings', <SettingOutlined />),
   // getItem('Team', 'sub2', <TeamOutlined />, [

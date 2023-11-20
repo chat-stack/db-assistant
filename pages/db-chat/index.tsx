@@ -1,10 +1,11 @@
 import { SendOutlined } from '@ant-design/icons';
-import { Button, Collapse, Form, Input, Layout } from 'antd';
+import { Button, Collapse, Form, Input, Layout, message } from 'antd';
 import Head from 'next/head';
 import { ThreadMessage } from 'openai/resources/beta/threads/messages/messages';
 import { useState } from 'react';
 
 import Message from '@/components/message';
+import useSettingStore from '@/stores/setting.store';
 
 import { IChatLoading } from './chat-loading.interface';
 
@@ -12,6 +13,7 @@ const { Content, Footer } = Layout;
 const { Panel } = Collapse;
 
 export default function DbChat() {
+  const [openAiApiKey] = useSettingStore((state) => [state.openAiApiKey]);
   const [messagesState, setMessagesState] = useState<ThreadMessage[]>([]);
   const [userInput, setUserInput] = useState('');
   const [isLoadingState, setIsLoadingState] = useState<IChatLoading>({
@@ -21,6 +23,10 @@ export default function DbChat() {
   const threadId =
     messagesState.length > 0 ? messagesState[0].thread_id : undefined;
   const sendMessage = async () => {
+    if (!openAiApiKey) {
+      message.error('Error: OpenAI API Key is missing');
+      return;
+    }
     if (userInput.trim() !== '') {
       setIsLoadingState({
         isLoading: true,
@@ -34,6 +40,7 @@ export default function DbChat() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
+            apiKey: openAiApiKey,
             content: userInput,
             threadId,
           }),
