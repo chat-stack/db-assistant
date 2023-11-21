@@ -245,6 +245,8 @@ export default function DbChat() {
                           title: field?.name,
                           dataIndex: field?.name,
                           key: field?.name,
+                          sorter: (a: any, b: any) =>
+                            a[field?.name] - b[field?.name],
                         }))}
                       />
                     </>
