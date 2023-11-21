@@ -4,7 +4,7 @@ import { Button, Form, Input, Layout, message, Table, Tabs } from 'antd';
 import Head from 'next/head';
 import { ThreadMessage } from 'openai/resources/beta/threads/messages/messages';
 import { Resizable } from 're-resizable';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import Message from '@/components/message';
 import useDbChatTabStore from '@/stores/db-chat-tab.store';
@@ -37,6 +37,7 @@ export default function DbChat() {
   const threadId =
     messagesState.length > 0 ? messagesState[0].thread_id : undefined;
   const sendMessage = async () => {
+    setActiveTab('1');
     if (!openAiApiKey) {
       message.error('Error: OpenAI API Key is missing');
       return;
@@ -73,7 +74,6 @@ export default function DbChat() {
         });
         const data = await response.json();
         setMessagesState(data.messages || []);
-        scrollToBottom();
         setIsLoadingState({
           isLoading: false,
           currentUserInput: '',
@@ -90,6 +90,12 @@ export default function DbChat() {
     }
   };
 
+  const { activeTab, setActiveTab } = useDbChatTabStore();
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [isLoadingState, messagesState, activeTab]);
+
   const scrollToBottom = () => {
     if (chatPaneRef.current) {
       chatPaneRef.current.scrollTo({
@@ -98,8 +104,6 @@ export default function DbChat() {
       });
     }
   };
-
-  const { activeTab, setActiveTab } = useDbChatTabStore();
 
   const { sqlQuery, setSqlQuery } = useSqlStore();
   const [queryResult, setQueryResult] = useState<any>(null); // State to hold query results
