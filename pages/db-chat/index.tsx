@@ -84,7 +84,7 @@ export default function DbChat() {
             messagesState.length === 0 &&
             !isLoadingState.isLoading && (
               <Content className="min-h-full min-w-full flex items-center justify-center">
-                <p className="text-4xl">Chat with database</p>
+                <p className="text-4xl">DB Assistant</p>
               </Content>
             )}
           {(isLoadingState.isLoading ||
