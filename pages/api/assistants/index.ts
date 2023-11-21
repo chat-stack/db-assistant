@@ -3,6 +3,9 @@ import OpenAI from 'openai';
 import { Client } from 'pg';
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
+  if (req.method !== 'POST') {
+    return res.status(405);
+  }
   try {
     const {
       apiKey,
@@ -13,9 +16,18 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       postgresPort,
     } = req.body;
     if (!apiKey) {
-      res
-        .status(400)
-        .json({ error: 'Please provide OpenAI API Key in your request body' });
+      res.status(400).json({ error: 'Please provide OpenAI API Key' });
+    }
+    if (
+      !postgresUser ||
+      !postgresHost ||
+      !postgresDatabase ||
+      !postgresPassword ||
+      !postgresPort
+    ) {
+      return res.status(400).json({
+        error: 'Please provide all required PostgreSQL credentials',
+      });
     }
 
     const openai = new OpenAI({

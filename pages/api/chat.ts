@@ -15,6 +15,10 @@ const handler = async (
   req: NextApiRequest,
   res: NextApiResponse<ResponseData>
 ) => {
+  if (req.method !== 'POST') {
+    return res.status(405);
+  }
+
   let responseSent = false; // Flag to track if response has been sent
 
   const delay = (ms: number) => {
@@ -31,10 +35,6 @@ const handler = async (
     });
   };
 
-  if (req.method !== 'POST') {
-    return res.status(405);
-  }
-
   try {
     const {
       apiKey,
@@ -48,16 +48,6 @@ const handler = async (
       assistantId,
       lastMessageId,
     } = req.body;
-
-    const dbConfig = {
-      user: postgresUser,
-      password: postgresPassword,
-      host: postgresHost,
-      port: +postgresPort,
-      database: postgresDatabase,
-    };
-
-    const pool = new Pool(dbConfig);
 
     if (!apiKey) {
       res
@@ -76,6 +66,16 @@ const handler = async (
           'Please provide all required PostgreSQL credentials in your request body',
       });
     }
+
+    const dbConfig = {
+      user: postgresUser,
+      password: postgresPassword,
+      host: postgresHost,
+      port: +postgresPort,
+      database: postgresDatabase,
+    };
+
+    const pool = new Pool(dbConfig);
 
     const openai = new OpenAI({
       apiKey,
@@ -102,60 +102,76 @@ const handler = async (
     const run = await openai.beta.threads.runs.create(thread.id, {
       assistant_id: assistantId,
     });
+
+    let pollingActive = true;
+
     const pollingHandler = async () => {
-      const retrievedRun = await openai.beta.threads.runs.retrieve(
-        thread.id,
-        run.id
-      );
-      console.log(retrievedRun.status);
-      if (
-        retrievedRun.status !== 'queued' &&
-        retrievedRun.status !== 'in_progress' &&
-        retrievedRun.status !== 'requires_action'
-      ) {
-        clearInterval(pollingId);
-      }
-      if (retrievedRun.status === 'completed') {
-        // return messages back to FE
-        let messages: ThreadMessage[];
-        if (!lastMessageId) {
-          messages = (await openai.beta.threads.messages.list(thread.id)).data;
-        } else {
-          messages = (
-            await openai.beta.threads.messages.list(thread.id, {
-              after: lastMessageId,
-            })
-          ).data;
+      if (!pollingActive) return;
+
+      try {
+        const retrievedRun = await openai.beta.threads.runs.retrieve(
+          thread.id,
+          run.id
+        );
+        console.log(retrievedRun.status);
+        if (
+          retrievedRun.status !== 'queued' &&
+          retrievedRun.status !== 'in_progress' &&
+          retrievedRun.status !== 'requires_action'
+        ) {
+          clearInterval(pollingId);
         }
-        console.log(messages);
-        responseSent = true;
-        await pool.end();
-        res.status(200).json({ messages });
-        return;
-      }
-      if (retrievedRun.status === 'requires_action') {
-        // need to submit tool outputs
-        if (retrievedRun.required_action?.type === 'submit_tool_outputs') {
-          const tool_outputs: OpenAI.Beta.Threads.Runs.RunSubmitToolOutputsParams.ToolOutput[] =
-            await Promise.all(
-              retrievedRun.required_action.submit_tool_outputs.tool_calls.map(
-                async (
-                  tool_call
-                ): Promise<OpenAI.Beta.Threads.Runs.RunSubmitToolOutputsParams.ToolOutput> => {
-                  console.log(tool_call);
-                  return dispatchToolCall(tool_call, pool);
-                }
-              )
+        if (retrievedRun.status === 'completed') {
+          // return messages back to FE
+          let messages: ThreadMessage[];
+          if (!lastMessageId) {
+            messages = (await openai.beta.threads.messages.list(thread.id))
+              .data;
+          } else {
+            messages = (
+              await openai.beta.threads.messages.list(thread.id, {
+                after: lastMessageId,
+              })
+            ).data;
+          }
+          console.log(messages);
+          responseSent = true;
+          await pool.end();
+          res.status(200).json({ messages });
+          return;
+        }
+        if (retrievedRun.status === 'requires_action') {
+          pollingActive = false;
+          // need to submit tool outputs
+          if (retrievedRun.required_action?.type === 'submit_tool_outputs') {
+            const tool_outputs: OpenAI.Beta.Threads.Runs.RunSubmitToolOutputsParams.ToolOutput[] =
+              await Promise.all(
+                retrievedRun.required_action.submit_tool_outputs.tool_calls.map(
+                  async (
+                    tool_call
+                  ): Promise<OpenAI.Beta.Threads.Runs.RunSubmitToolOutputsParams.ToolOutput> => {
+                    console.log(tool_call);
+                    return dispatchToolCall(tool_call, pool);
+                  }
+                )
+              );
+            console.log(tool_outputs);
+            await openai.beta.threads.runs.submitToolOutputs(
+              thread.id,
+              retrievedRun.id,
+              {
+                tool_outputs,
+              }
             );
-          console.log(tool_outputs);
-          await openai.beta.threads.runs.submitToolOutputs(
-            thread.id,
-            retrievedRun.id,
-            {
-              tool_outputs,
-            }
-          );
+          }
+          pollingActive = true;
         }
+      } catch (error) {
+        if (!responseSent) {
+          await pool.end();
+        }
+        console.error(error);
+        res.status(500).json({ error: `Error ${error}` });
       }
     };
     const startPolling = () => setInterval(pollingHandler, 1000);
