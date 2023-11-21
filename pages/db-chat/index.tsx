@@ -1,8 +1,8 @@
 import { SendOutlined } from '@ant-design/icons';
-import { Button, Collapse, Form, Input, Layout, message } from 'antd';
+import { Button, Form, Input, Layout, message, Tabs } from 'antd';
 import Head from 'next/head';
 import { ThreadMessage } from 'openai/resources/beta/threads/messages/messages';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import Message from '@/components/message';
 import useSettingStore from '@/stores/setting.store';
@@ -10,7 +10,7 @@ import useSettingStore from '@/stores/setting.store';
 import { IChatLoading } from './chat-loading.interface';
 
 const { Content, Footer } = Layout;
-const { Panel } = Collapse;
+const { TabPane } = Tabs;
 
 export default function DbChat() {
   const {
@@ -36,6 +36,7 @@ export default function DbChat() {
     currentUserInput: '',
     isLoading: false,
   });
+  const chatPaneRef = useRef<HTMLDivElement>(null);
   const threadId =
     messagesState.length > 0 ? messagesState[0].thread_id : undefined;
   const sendMessage = async () => {
@@ -74,7 +75,8 @@ export default function DbChat() {
           }),
         });
         const data = await response.json();
-        setMessagesState(data.messages || []); // assuming the response data structure
+        setMessagesState(data.messages || []);
+        scrollToBottom();
         setIsLoadingState({
           isLoading: false,
           currentUserInput: '',
@@ -88,6 +90,15 @@ export default function DbChat() {
     if (event.key === 'Enter') {
       event.preventDefault(); // prevent form submission
       sendMessage();
+    }
+  };
+
+  const scrollToBottom = () => {
+    if (chatPaneRef.current) {
+      chatPaneRef.current.scrollTo({
+        top: chatPaneRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
     }
   };
 
@@ -108,16 +119,14 @@ export default function DbChat() {
           {(isLoadingState.isLoading ||
             (messagesState && messagesState.length !== 0)) && (
             <Content className="min-h-full min-w-full">
-              <Collapse
-                defaultActiveKey={['1']}
-                className="w-full mx-auto min-h-full"
+              <Tabs
+                defaultActiveKey="1"
+                className="w-full mx-auto min-h-full bg-white px-8 py-2 rounded-md"
               >
-                <Panel header="DB Chat" key="1">
+                <TabPane tab="DB Chat" key="1">
                   <div
-                    style={{
-                      maxHeight: 'calc(100vh - 16rem)',
-                      overflowY: 'auto',
-                    }}
+                    className="max-h-[calc(100vh-16rem)] overflow-y-auto"
+                    ref={chatPaneRef}
                   >
                     {messagesState.toReversed().map((message) => (
                       <Message key={message.id} message={message} />
@@ -158,8 +167,12 @@ export default function DbChat() {
                       </>
                     )}
                   </div>
-                </Panel>
-              </Collapse>
+                </TabPane>
+                <TabPane tab="Data and SQL Console" key="2">
+                  {/* Content for Data and SQL Console */}
+                  <p>SQL Console Interface Here</p>
+                </TabPane>
+              </Tabs>
             </Content>
           )}
           <Footer className="text-center min-w-full" style={{ padding: 0 }}>
