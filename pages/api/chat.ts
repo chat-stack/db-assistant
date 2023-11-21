@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import OpenAI from 'openai';
 import { ThreadMessage } from 'openai/resources/beta/threads/messages/messages';
 import { Thread } from 'openai/resources/beta/threads/threads';
+import { Pool } from 'pg';
 
 import { dispatchToolCall } from './openai-functions';
 
@@ -35,12 +36,45 @@ const handler = async (
   }
 
   try {
-    const { apiKey, content, threadId, assistantId, lastMessageId } = req.body;
+    const {
+      apiKey,
+      postgresUser,
+      postgresHost,
+      postgresDatabase,
+      postgresPassword,
+      postgresPort,
+      content,
+      threadId,
+      assistantId,
+      lastMessageId,
+    } = req.body;
+
+    const dbConfig = {
+      user: postgresUser,
+      password: postgresPassword,
+      host: postgresHost,
+      port: postgresPort,
+      database: postgresDatabase,
+    };
+
+    const pool = new Pool(dbConfig);
 
     if (!apiKey) {
       res
         .status(400)
         .json({ error: 'Please provide OpenAI API Key in your request body' });
+    }
+    if (
+      !postgresUser ||
+      !postgresHost ||
+      !postgresDatabase ||
+      !postgresPassword ||
+      !postgresPort
+    ) {
+      return res.status(400).json({
+        error:
+          'Please provide all required PostgreSQL credentials in your request body',
+      });
     }
 
     const openai = new OpenAI({
@@ -95,6 +129,7 @@ const handler = async (
         }
         console.log(messages);
         responseSent = true;
+        await pool.end();
         res.status(200).json({ messages });
         return;
       }
@@ -108,7 +143,7 @@ const handler = async (
                   tool_call
                 ): Promise<OpenAI.Beta.Threads.Runs.RunSubmitToolOutputsParams.ToolOutput> => {
                   console.log(tool_call);
-                  return dispatchToolCall(tool_call);
+                  return dispatchToolCall(tool_call, pool);
                 }
               )
             );
@@ -130,6 +165,7 @@ const handler = async (
     clearInterval(pollingId);
 
     if (!responseSent) {
+      await pool.end();
       res
         .status(500)
         .json({ error: 'Internal server error, no response from OpenAI' });

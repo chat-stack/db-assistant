@@ -13,8 +13,21 @@ const { Content, Footer } = Layout;
 const { Panel } = Collapse;
 
 export default function DbChat() {
-  const { openAiApiKey, assistantId } = useSettingStore((state) => ({
+  const {
+    openAiApiKey,
+    postgresUser,
+    postgresHost,
+    postgresDatabase,
+    postgresPassword,
+    postgresPort,
+    assistantId,
+  } = useSettingStore((state) => ({
     openAiApiKey: state.openAiApiKey,
+    postgresUser: state.postgresUser,
+    postgresHost: state.postgresHost,
+    postgresDatabase: state.postgresDatabase,
+    postgresPassword: state.postgresPassword,
+    postgresPort: state.postgresPort,
     assistantId: state.assistantId,
   }));
   const [messagesState, setMessagesState] = useState<ThreadMessage[]>([]);
@@ -53,6 +66,11 @@ export default function DbChat() {
             content: userInput,
             threadId,
             assistantId,
+            postgresUser,
+            postgresHost,
+            postgresDatabase,
+            postgresPassword,
+            postgresPort,
           }),
         });
         const data = await response.json();
