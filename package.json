@@ -15,7 +15,6 @@
     "@types/react-dom": "18.0.11",
     "antd": "^5.4.1",
     "autoprefixer": "10.4.14",
-    "mustache": "^4.2.0",
     "next": "13.3.0",
     "openai": "^4.19.0",
     "pg": "^8.11.3",
