@@ -104,8 +104,10 @@ export default function DbChat() {
   const { sqlQuery, setSqlQuery } = useSqlStore();
   const [queryResult, setQueryResult] = useState<any>(null); // State to hold query results
   const [queryError, setQueryError] = useState(''); // State to handle query errors
+  const [isExecutingSql, setIsExecutingSql] = useState(false);
 
   const executeSqlQuery = async () => {
+    setIsExecutingSql(true);
     try {
       const response = await fetch('/api/execute-sql', {
         method: 'POST',
@@ -130,6 +132,7 @@ export default function DbChat() {
     } catch (error) {
       setQueryError(`Error: ${error}`);
     }
+    setIsExecutingSql(false);
   };
 
   return (
@@ -230,6 +233,7 @@ export default function DbChat() {
                     icon={<PlayCircleOutlined />}
                     onClick={executeSqlQuery}
                     className="my-4 w-fit-content"
+                    loading={isExecutingSql}
                   >
                     Execute SQL
                   </Button>
