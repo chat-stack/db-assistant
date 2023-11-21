@@ -247,10 +247,19 @@ export default function DbChat() {
                     <>
                       <Table
                         dataSource={
-                          queryResult?.rows?.map((row: any) => ({
-                            ...row,
-                            key: `${JSON.stringify(row)}`,
-                          })) || []
+                          queryResult?.rows?.map(
+                            (row: Record<string, any>) => ({
+                              ...Object.fromEntries(
+                                Object.entries(row).map(([key, value]) => [
+                                  key,
+                                  typeof value === 'boolean'
+                                    ? value.toString()
+                                    : value,
+                                ])
+                              ),
+                              key: `${JSON.stringify(row)}`,
+                            })
+                          ) || []
                         }
                         columns={queryResult?.fields?.map((field: any) => ({
                           title: field?.name,
@@ -259,6 +268,7 @@ export default function DbChat() {
                           sorter: (a: any, b: any) =>
                             a[field?.name] - b[field?.name],
                         }))}
+                        scroll={{ x: 'max-content' }}
                       />
                     </>
                   )}
