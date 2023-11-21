@@ -21,22 +21,7 @@ export default function Settings() {
     setPostgresPort,
     assistantId,
     setAssistantId,
-  } = useSettingStore((state) => ({
-    openAiApiKey: state.openAiApiKey,
-    setOpenAiApiKey: state.setOpenAiApiKey,
-    postgresUser: state.postgresUser,
-    setPostgresUser: state.setPostgresUser,
-    postgresHost: state.postgresHost,
-    setPostgresHost: state.setPostgresHost,
-    postgresDatabase: state.postgresDatabase,
-    setPostgresDatabase: state.setPostgresDatabase,
-    postgresPassword: state.postgresPassword,
-    setPostgresPassword: state.setPostgresPassword,
-    postgresPort: state.postgresPort,
-    setPostgresPort: state.setPostgresPort,
-    assistantId: state.assistantId,
-    setAssistantId: state.setAssistantId,
-  }));
+  } = useSettingStore();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 

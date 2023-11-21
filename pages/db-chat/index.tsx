@@ -7,7 +7,9 @@ import { Resizable } from 're-resizable';
 import { useRef, useState } from 'react';
 
 import Message from '@/components/message';
+import useDbChatTabStore from '@/stores/db-chat-tab.store';
 import useSettingStore from '@/stores/setting.store';
+import useSqlStore from '@/stores/sql.store';
 
 import { IChatLoading } from './chat-loading.interface';
 
@@ -23,15 +25,7 @@ export default function DbChat() {
     postgresPassword,
     postgresPort,
     assistantId,
-  } = useSettingStore((state) => ({
-    openAiApiKey: state.openAiApiKey,
-    postgresUser: state.postgresUser,
-    postgresHost: state.postgresHost,
-    postgresDatabase: state.postgresDatabase,
-    postgresPassword: state.postgresPassword,
-    postgresPort: state.postgresPort,
-    assistantId: state.assistantId,
-  }));
+  } = useSettingStore();
   const [messagesState, setMessagesState] = useState<ThreadMessage[]>([]);
   const [userInput, setUserInput] = useState('');
   const [isLoadingState, setIsLoadingState] = useState<IChatLoading>({
@@ -105,7 +99,9 @@ export default function DbChat() {
     }
   };
 
-  const [sqlQuery, setSqlQuery] = useState(''); // State to hold SQL query
+  const { activeTab, setActiveTab } = useDbChatTabStore();
+
+  const { sqlQuery, setSqlQuery } = useSqlStore();
   const [queryResult, setQueryResult] = useState<any>(null); // State to hold query results
   const [queryError, setQueryError] = useState(''); // State to handle query errors
 
@@ -124,8 +120,13 @@ export default function DbChat() {
         }),
       });
       const data = await response.json();
-      setQueryResult(data);
-      setQueryError('');
+      if (response.status === 200) {
+        setQueryResult(data);
+        setQueryError('');
+      } else {
+        setQueryResult(data);
+        setQueryError(`${JSON.stringify(data, null, 2)}`);
+      }
     } catch (error) {
       setQueryError(`Error: ${error}`);
     }
@@ -140,12 +141,13 @@ export default function DbChat() {
         <Layout className="min-w-full">
           <Content className="min-h-full min-w-full">
             <Tabs
-              defaultActiveKey="1"
+              activeKey={activeTab}
+              onChange={setActiveTab}
               className="w-full mx-auto min-h-full bg-white px-8 py-2 rounded-md"
             >
               <TabPane tab="DB Chat" key="1">
                 <div
-                  className="max-h-[calc(100vh-16rem)] overflow-y-auto"
+                  className="max-h-[calc(100vh-16rem)] h-[calc(100vh-16rem)] overflow-y-auto"
                   ref={chatPaneRef}
                 >
                   {messagesState &&
@@ -200,7 +202,7 @@ export default function DbChat() {
                 key="2"
                 className="max-w-full"
               >
-                <div className="flex flex-col justify-start items-center h-[calc(100vh-20rem)] max-h-[calc(100vh-20rem)] overflow-y-auto">
+                <div className="flex flex-col justify-start items-center h-[calc(100vh-17rem)] max-h-[calc(100vh-17rem)] overflow-y-auto">
                   <Resizable
                     defaultSize={{ width: '100%', height: '320' }}
                     enable={{
@@ -220,6 +222,7 @@ export default function DbChat() {
                       language="sql"
                       defaultValue="-- Write your SQL query here"
                       onChange={(value) => setSqlQuery(value || '')}
+                      value={sqlQuery}
                     />
                   </Resizable>
                   <Button
