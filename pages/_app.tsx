@@ -39,10 +39,10 @@ const App = ({ Component, pageProps }: AppProps) => {
 
   const router = useRouter();
 
-  let selectedKey = '/prompts';
+  let selectedKey = '/db-chat';
   items.forEach((item) => {
     if (item?.key) {
-      if (router.pathname.split('/')[1].includes(item.key.toString())) {
+      if (item.key.toString().includes(router.pathname.split('/')[1])) {
         selectedKey = item.key.toString();
       }
     }

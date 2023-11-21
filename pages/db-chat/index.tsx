@@ -13,7 +13,10 @@ const { Content, Footer } = Layout;
 const { Panel } = Collapse;
 
 export default function DbChat() {
-  const [openAiApiKey] = useSettingStore((state) => [state.openAiApiKey]);
+  const { openAiApiKey, assistantId } = useSettingStore((state) => ({
+    openAiApiKey: state.openAiApiKey,
+    assistantId: state.assistantId,
+  }));
   const [messagesState, setMessagesState] = useState<ThreadMessage[]>([]);
   const [userInput, setUserInput] = useState('');
   const [isLoadingState, setIsLoadingState] = useState<IChatLoading>({
@@ -25,6 +28,12 @@ export default function DbChat() {
   const sendMessage = async () => {
     if (!openAiApiKey) {
       message.error('Error: OpenAI API Key is missing');
+      return;
+    }
+    if (!assistantId) {
+      message.error(
+        'Error: Please create an assistant to use in settings page first'
+      );
       return;
     }
     if (userInput.trim() !== '') {
@@ -43,10 +52,10 @@ export default function DbChat() {
             apiKey: openAiApiKey,
             content: userInput,
             threadId,
+            assistantId,
           }),
         });
         const data = await response.json();
-        console.log({ data });
         setMessagesState(data.messages || []); // assuming the response data structure
         setIsLoadingState({
           isLoading: false,

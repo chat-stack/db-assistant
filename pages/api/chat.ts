@@ -35,7 +35,7 @@ const handler = async (
   }
 
   try {
-    const { apiKey, content, threadId, lastMessageId } = req.body;
+    const { apiKey, content, threadId, assistantId, lastMessageId } = req.body;
 
     if (!apiKey) {
       res
@@ -66,7 +66,7 @@ const handler = async (
       });
     }
     const run = await openai.beta.threads.runs.create(thread.id, {
-      assistant_id: 'asst_Pp9OnpqM9oohvAnzmmciq15T',
+      assistant_id: assistantId,
     });
     const pollingHandler = async () => {
       const retrievedRun = await openai.beta.threads.runs.retrieve(
@@ -126,7 +126,7 @@ const handler = async (
     const startPolling = () => setInterval(pollingHandler, 1000);
     const pollingId = startPolling();
 
-    await delay(30000);
+    await delay(200000);
     clearInterval(pollingId);
 
     if (!responseSent) {
