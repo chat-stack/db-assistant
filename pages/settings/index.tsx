@@ -1,4 +1,4 @@
-import { Button, Form, Input } from 'antd';
+import { Button, Form, Input, message } from 'antd';
 import Head from 'next/head';
 import OpenAI from 'openai';
 import { useState } from 'react';
@@ -59,6 +59,38 @@ export default function Settings() {
     const assistant: OpenAI.Beta.Assistants.Assistant = await response.json();
     setAssistantId(assistant.id);
     setIsSubmitting(false);
+  };
+
+  const [isTestingConnection, setIsTestingConnection] = useState(false);
+
+  const handleTestConnection = async () => {
+    setIsTestingConnection(true);
+    const response = await fetch('/api/test-connection', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        postgresUser,
+        postgresHost,
+        postgresDatabase,
+        postgresPassword,
+        postgresPort,
+      }),
+    });
+    const responseJson = await response.json();
+    if (responseJson && responseJson.success) {
+      message.success('Test connection succeeded');
+    } else {
+      message.error(
+        `${
+          responseJson
+            ? responseJson.error?.toString()
+            : 'Error: no more details'
+        }`
+      );
+    }
+    setIsTestingConnection(false);
   };
 
   return (
@@ -124,7 +156,19 @@ export default function Settings() {
             className="w-[64rem] max-w-full"
             style={{ textAlign: 'center' }}
           >
-            <Button type="primary" htmlType="submit" loading={isSubmitting}>
+            <Button
+              onClick={handleTestConnection}
+              loading={isTestingConnection}
+              className="mr-1"
+            >
+              Test Connection
+            </Button>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={isSubmitting}
+              className="ml-1"
+            >
               Create DB Assistant
             </Button>
           </Form.Item>
