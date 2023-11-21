@@ -1,7 +1,9 @@
-import { SendOutlined } from '@ant-design/icons';
-import { Button, Form, Input, Layout, message, Tabs } from 'antd';
+import { PlayCircleOutlined, SendOutlined } from '@ant-design/icons';
+import Editor from '@monaco-editor/react';
+import { Button, Form, Input, Layout, message, Table, Tabs } from 'antd';
 import Head from 'next/head';
 import { ThreadMessage } from 'openai/resources/beta/threads/messages/messages';
+import { Resizable } from 're-resizable';
 import { useRef, useState } from 'react';
 
 import Message from '@/components/message';
@@ -37,6 +39,7 @@ export default function DbChat() {
     isLoading: false,
   });
   const chatPaneRef = useRef<HTMLDivElement>(null);
+
   const threadId =
     messagesState.length > 0 ? messagesState[0].thread_id : undefined;
   const sendMessage = async () => {
@@ -102,6 +105,32 @@ export default function DbChat() {
     }
   };
 
+  const [sqlQuery, setSqlQuery] = useState(''); // State to hold SQL query
+  const [queryResult, setQueryResult] = useState<any>(null); // State to hold query results
+  const [queryError, setQueryError] = useState(''); // State to handle query errors
+
+  const executeSqlQuery = async () => {
+    try {
+      const response = await fetch('/api/execute-sql', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          postgresUser,
+          postgresHost,
+          postgresDatabase,
+          postgresPassword,
+          postgresPort,
+          sql: sqlQuery,
+        }),
+      });
+      const data = await response.json();
+      setQueryResult(data);
+      setQueryError('');
+    } catch (error) {
+      setQueryError(`Error: ${error}`);
+    }
+  };
+
   return (
     <>
       <Head>
@@ -109,72 +138,121 @@ export default function DbChat() {
       </Head>
       <main className="flex flex-col items-center justify-between px-4 min-h-full min-w-full">
         <Layout className="min-w-full">
-          {messagesState &&
-            messagesState.length === 0 &&
-            !isLoadingState.isLoading && (
-              <Content className="min-h-full min-w-full flex items-center justify-center">
-                <p className="text-4xl">DB Assistant</p>
-              </Content>
-            )}
-          {(isLoadingState.isLoading ||
-            (messagesState && messagesState.length !== 0)) && (
-            <Content className="min-h-full min-w-full">
-              <Tabs
-                defaultActiveKey="1"
-                className="w-full mx-auto min-h-full bg-white px-8 py-2 rounded-md"
-              >
-                <TabPane tab="DB Chat" key="1">
-                  <div
-                    className="max-h-[calc(100vh-16rem)] overflow-y-auto"
-                    ref={chatPaneRef}
-                  >
-                    {messagesState.toReversed().map((message) => (
-                      <Message key={message.id} message={message} />
-                    ))}
-                    {isLoadingState.isLoading && (
-                      <>
-                        <Message
-                          key={'currentUserMessage'}
-                          message={{
-                            role: 'user',
-                            content: [
-                              {
-                                type: 'text',
-                                text: {
-                                  value: isLoadingState.currentUserInput,
-                                  annotations: [],
-                                },
-                              },
-                            ],
-                          }}
-                        />
-                        <Message
-                          key={'loadingAssistantMessage'}
-                          message={{
-                            role: 'assistant',
-                            content: [
-                              {
-                                type: 'text',
-                                text: {
-                                  value: 'Waiting for Response',
-                                  annotations: [],
-                                },
-                              },
-                            ],
-                          }}
-                          isLoading
-                        />
-                      </>
+          <Content className="min-h-full min-w-full">
+            <Tabs
+              defaultActiveKey="1"
+              className="w-full mx-auto min-h-full bg-white px-8 py-2 rounded-md"
+            >
+              <TabPane tab="DB Chat" key="1">
+                <div
+                  className="max-h-[calc(100vh-16rem)] overflow-y-auto"
+                  ref={chatPaneRef}
+                >
+                  {messagesState &&
+                    messagesState.length === 0 &&
+                    !isLoadingState.isLoading && (
+                      <div className="min-h-full min-w-full h-[calc(100vh-16rem)] flex items-center justify-center">
+                        <p className="text-4xl">DB Assistant</p>
+                      </div>
                     )}
-                  </div>
-                </TabPane>
-                <TabPane tab="Data and SQL Console" key="2">
-                  {/* Content for Data and SQL Console */}
-                  <p>SQL Console Interface Here</p>
-                </TabPane>
-              </Tabs>
-            </Content>
-          )}
+                  {messagesState.toReversed().map((message) => (
+                    <Message key={message.id} message={message} />
+                  ))}
+                  {isLoadingState.isLoading && (
+                    <>
+                      <Message
+                        key={'currentUserMessage'}
+                        message={{
+                          role: 'user',
+                          content: [
+                            {
+                              type: 'text',
+                              text: {
+                                value: isLoadingState.currentUserInput,
+                                annotations: [],
+                              },
+                            },
+                          ],
+                        }}
+                      />
+                      <Message
+                        key={'loadingAssistantMessage'}
+                        message={{
+                          role: 'assistant',
+                          content: [
+                            {
+                              type: 'text',
+                              text: {
+                                value: 'Waiting for Response',
+                                annotations: [],
+                              },
+                            },
+                          ],
+                        }}
+                        isLoading
+                      />
+                    </>
+                  )}
+                </div>
+              </TabPane>
+              <TabPane
+                tab="Data and SQL Console"
+                key="2"
+                className="max-w-full"
+              >
+                <div className="flex flex-col justify-start items-center h-[calc(100vh-20rem)] max-h-[calc(100vh-20rem)] overflow-y-auto">
+                  <Resizable
+                    defaultSize={{ width: '100%', height: '320' }}
+                    enable={{
+                      top: false,
+                      right: false,
+                      bottom: true,
+                      left: false,
+                      topRight: false,
+                      bottomRight: false,
+                      bottomLeft: false,
+                      topLeft: false,
+                    }}
+                    className="border border-gray-300 border-solid rounded-sm"
+                  >
+                    <Editor
+                      height={'100%'}
+                      language="sql"
+                      defaultValue="-- Write your SQL query here"
+                      onChange={(value) => setSqlQuery(value || '')}
+                    />
+                  </Resizable>
+                  <Button
+                    type="primary"
+                    icon={<PlayCircleOutlined />}
+                    onClick={executeSqlQuery}
+                    className="my-4 w-fit-content"
+                  >
+                    Execute SQL
+                  </Button>
+                  {queryError ? (
+                    <p style={{ color: 'red' }}>{queryError}</p>
+                  ) : (
+                    <>
+                      <Table
+                        dataSource={
+                          queryResult?.rows?.map((row: any) => ({
+                            ...row,
+                            key: `${JSON.stringify(row)}`,
+                          })) || []
+                        }
+                        columns={queryResult?.fields?.map((field: any) => ({
+                          title: field?.name,
+                          dataIndex: field?.name,
+                          key: field?.name,
+                        }))}
+                      />
+                    </>
+                  )}
+                </div>
+              </TabPane>
+            </Tabs>
+          </Content>
           <Footer className="text-center min-w-full" style={{ padding: 0 }}>
             <Form className="pt-4">
               <Input

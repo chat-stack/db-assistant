@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@ant-design/icons": "^5.1.4",
+    "@monaco-editor/react": "^4.6.0",
     "@types/node": "18.15.11",
     "@types/react": "18.0.34",
     "@types/react-dom": "18.0.11",
@@ -19,6 +20,7 @@
     "openai": "^4.19.0",
     "pg": "^8.11.3",
     "postcss": "8.4.21",
+    "re-resizable": "^6.9.11",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-markdown": "^8.0.7",

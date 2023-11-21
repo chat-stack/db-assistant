@@ -53,7 +53,7 @@ const handler = async (
       user: postgresUser,
       password: postgresPassword,
       host: postgresHost,
-      port: postgresPort,
+      port: +postgresPort,
       database: postgresDatabase,
     };
 

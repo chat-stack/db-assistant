@@ -40,7 +40,6 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
     const tableNames = data.rows.map((row) => {
       return row.tablename;
-      ``;
     });
 
     const myAssistant = await openai.beta.assistants.create({
