@@ -96,7 +96,7 @@ export default function DbChat() {
   };
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === 'Enter' && !event.shiftKey) {
-      event.preventDefault(); // prevent form submission
+      event.preventDefault();
       sendMessage();
     }
   };
@@ -117,7 +117,8 @@ export default function DbChat() {
   };
 
   const { sqlQuery, setSqlQuery } = useSqlStore();
-  const [queryResult, setQueryResult] = useState<any>(null); // State to hold query results
+  const [queryResultDataSource, setQueryResultDataSource] = useState<any>(null);
+  const [queryResultColumns, setQueryResultColumns] = useState<any>(null);
   const [queryError, setQueryError] = useState(''); // State to handle query errors
   const [isExecutingSql, setIsExecutingSql] = useState(false);
 
@@ -138,10 +139,50 @@ export default function DbChat() {
       });
       const data = await response.json();
       if (response.status === 200) {
-        setQueryResult(data);
+        setQueryResultDataSource(
+          data?.rows?.map((row: Record<string, any>) => ({
+            ...Object.fromEntries(
+              Object.entries(row).map(([key, value]) => [
+                key,
+                typeof value === 'boolean' ? value.toString() : value,
+              ])
+            ),
+            key: v4(),
+          })) || []
+        );
+        setQueryResultColumns(
+          data?.fields?.map((field: any) => ({
+            title: field?.name,
+            dataIndex: field?.name,
+            key: field?.name,
+            sorter: (a: any, b: any) => {
+              const valueA = a[field?.name];
+              const valueB = b[field?.name];
+
+              // Check if the values are numeric strings
+              const isNumericA = !isNaN(valueA);
+              const isNumericB = !isNaN(valueB);
+
+              if (isNumericA && isNumericB) {
+                // If both values are numeric, compare them as numbers
+                return parseFloat(valueA) - parseFloat(valueB);
+              } else if (isNumericA) {
+                // If only valueA is numeric, it comes before valueB
+                return -1;
+              } else if (isNumericB) {
+                // If only valueB is numeric, it comes before valueA
+                return 1;
+              } else {
+                // If neither value is numeric, compare them alphabetically
+                return valueA.localeCompare(valueB);
+              }
+            },
+          }))
+        );
         setQueryError('');
       } else {
-        setQueryResult(data);
+        setQueryResultDataSource(null);
+        setQueryResultColumns(null);
         setQueryError(`${JSON.stringify(data, null, 2)}`);
       }
     } catch (error) {
@@ -259,48 +300,8 @@ export default function DbChat() {
                       <Table
                         scroll={{ x: 'max-content' }}
                         className="w-full max-w-full overflow-auto"
-                        dataSource={
-                          queryResult?.rows?.map(
-                            (row: Record<string, any>) => ({
-                              ...Object.fromEntries(
-                                Object.entries(row).map(([key, value]) => [
-                                  key,
-                                  typeof value === 'boolean'
-                                    ? value.toString()
-                                    : value,
-                                ])
-                              ),
-                              key: v4(),
-                            })
-                          ) || []
-                        }
-                        columns={queryResult?.fields?.map((field: any) => ({
-                          title: field?.name,
-                          dataIndex: field?.name,
-                          key: field?.name,
-                          sorter: (a: any, b: any) => {
-                            const valueA = a[field?.name];
-                            const valueB = b[field?.name];
-
-                            // Check if the values are numeric strings
-                            const isNumericA = !isNaN(valueA);
-                            const isNumericB = !isNaN(valueB);
-
-                            if (isNumericA && isNumericB) {
-                              // If both values are numeric, compare them as numbers
-                              return parseFloat(valueA) - parseFloat(valueB);
-                            } else if (isNumericA) {
-                              // If only valueA is numeric, it comes before valueB
-                              return -1;
-                            } else if (isNumericB) {
-                              // If only valueB is numeric, it comes before valueA
-                              return 1;
-                            } else {
-                              // If neither value is numeric, compare them alphabetically
-                              return valueA.localeCompare(valueB);
-                            }
-                          },
-                        }))}
+                        dataSource={queryResultDataSource}
+                        columns={queryResultColumns}
                       />
                     </>
                   )}
