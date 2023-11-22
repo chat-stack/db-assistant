@@ -42,7 +42,12 @@ export default function Settings() {
       }),
     });
     const assistant: OpenAI.Beta.Assistants.Assistant = await response.json();
-    setAssistantId(assistant.id);
+    if (!assistant || !assistant.id) {
+      message.error('Failed to create assistant');
+    } else {
+      setAssistantId(assistant.id);
+    }
+
     setIsSubmitting(false);
   };
 

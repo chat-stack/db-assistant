@@ -84,6 +84,9 @@ export default function DbChat() {
           }),
         });
         const data = await response.json();
+        if (data.error) {
+          message.error(`Chat request failed with error: ${data.error}`);
+        }
         setMessagesState(data.messages || []);
         setIsLoadingState({
           isLoading: false,
@@ -184,6 +187,7 @@ export default function DbChat() {
         setQueryResultDataSource(null);
         setQueryResultColumns(null);
         setQueryError(`${JSON.stringify(data, null, 2)}`);
+        message.error('Execution of SQL failed with errors');
       }
     } catch (error) {
       setQueryError(`Error: ${error}`);
