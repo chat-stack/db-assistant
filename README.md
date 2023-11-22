@@ -26,6 +26,8 @@ pnpm dev
 
 Head to settings page. Fill in your OpenAI API Key and Postgres SQL database credentials. Then you can create an assistant there. Now head to DB Chat page to start a chat.
 
+Tips: to start a new chat thread, refresh your page.
+
 **Disclaimer:**
 - Your credentials are persisted locally. If you still have security concerns you can manually clear them after usage.
 - It's better to run this locally than deploy it. Its backend uses polling on OpenAI Assistant API resulting in a lot of function execution GB-Hrs.
