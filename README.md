@@ -6,9 +6,9 @@ DB Assistant is a Next.js app that uses latest OpenAI Assistant API to provide S
 Currently it ONLY supports Postgres SQL.
 
 ## Screenshots Demo
-<img width="1593" alt="screenshot-chat" src="https://github.com/chat-stack/db-assistant/assets/8742155/e72d96a8-b5d3-41df-a266-dca506d1a653">
+<img width="1594" alt="screenshot-chat" src="https://github.com/chat-stack/db-assistant/assets/8742155/706afd49-d54b-4702-b5c8-48e1a7d362f3">
 
-<img width="1601" alt="screenshot-sql-console" src="https://github.com/chat-stack/db-assistant/assets/8742155/806259b7-aa6e-4d1f-be4d-500713de2a27">
+<img width="1596" alt="screenshot-console" src="https://github.com/chat-stack/db-assistant/assets/8742155/ea13e6d2-968c-4b74-aacc-b1b9ad383f6b">
 
 ## Getting Started
 
