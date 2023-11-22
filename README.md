@@ -1,4 +1,7 @@
 ## Screenshots Demo
+<img width="1593" alt="screenshot-chat" src="https://github.com/chat-stack/db-assistant/assets/8742155/a6396bfe-4f84-479a-86c0-03df4c64cc8f">
+
+<img width="1601" alt="screenshot-sql-console" src="https://github.com/chat-stack/db-assistant/assets/8742155/d639bbc6-d1a9-4b5a-acba-13929b9a43c9">
 
 ## Getting Started
 
