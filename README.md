@@ -3,6 +3,8 @@ SQL generator and console that knows your schema and entity relations. Powered b
 
 DB Assistant is a Next.js app that uses latest OpenAI Assistant API to provide SQL generation through chat. DB Assistant will call functions automatically to fetch your table schemas and relations to generate more accurate SQL based on your data than vanilla ChatGPT.
 
+Currently it ONLY supports Postgres SQL.
+
 ## Screenshots Demo
 <img width="1593" alt="screenshot-chat" src="https://github.com/chat-stack/db-assistant/assets/8742155/a6396bfe-4f84-479a-86c0-03df4c64cc8f">
 
