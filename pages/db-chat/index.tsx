@@ -1,6 +1,16 @@
 import { PlayCircleOutlined, SendOutlined } from '@ant-design/icons';
 import Editor from '@monaco-editor/react';
-import { Button, Form, Input, Layout, message, Table, Tabs } from 'antd';
+import {
+  Button,
+  Col,
+  Form,
+  Input,
+  Layout,
+  message,
+  Row,
+  Table,
+  Tabs,
+} from 'antd';
 import Head from 'next/head';
 import { ThreadMessage } from 'openai/resources/beta/threads/messages/messages';
 import { Resizable } from 're-resizable';
@@ -84,8 +94,8 @@ export default function DbChat() {
       }
     }
   };
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter') {
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault(); // prevent form submission
       sendMessage();
     }
@@ -300,18 +310,27 @@ export default function DbChat() {
           </Content>
           <Footer className="text-center min-w-full" style={{ padding: 0 }}>
             <Form className="pt-4">
-              <Input
-                className="min-w-full"
-                placeholder="Message DB Assistant..."
-                value={userInput}
-                onChange={(e) => setUserInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                suffix={
-                  <Button type="primary" onClick={sendMessage}>
+              <Row gutter={8}>
+                <Col flex="auto">
+                  <Input.TextArea
+                    className="min-w-full"
+                    placeholder="Message DB Assistant..."
+                    value={userInput}
+                    onChange={(e) => setUserInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    autoSize={{ minRows: 1, maxRows: 2 }}
+                  />
+                </Col>
+                <Col>
+                  <Button
+                    type="primary"
+                    onClick={sendMessage}
+                    className="h-full"
+                  >
                     <SendOutlined />
                   </Button>
-                }
-              />
+                </Col>
+              </Row>
             </Form>
           </Footer>
         </Layout>

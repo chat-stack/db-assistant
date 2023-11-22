@@ -74,7 +74,7 @@ const App = ({ Component, pageProps }: AppProps) => {
         <Content className="m-8">
           <Component {...pageProps} />
         </Content>
-        <Footer className="text-center py-4">
+        <Footer className="text-center pb-4 pt-0">
           If you like this project please give it a{' '}
           <a href="https://github.com/chat-stack/db-assistant" target="_blank">
             ⭐ on Github
