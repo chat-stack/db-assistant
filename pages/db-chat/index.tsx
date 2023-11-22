@@ -5,6 +5,7 @@ import Head from 'next/head';
 import { ThreadMessage } from 'openai/resources/beta/threads/messages/messages';
 import { Resizable } from 're-resizable';
 import { useEffect, useRef, useState } from 'react';
+import { v4 } from 'uuid';
 
 import Message from '@/components/message';
 import useDbChatTabStore from '@/stores/db-chat-tab.store';
@@ -144,13 +145,13 @@ export default function DbChat() {
       <Head>
         <title>DB Chat</title>
       </Head>
-      <main className="flex flex-col items-center justify-between px-4 min-h-full min-w-full">
-        <Layout className="min-w-full">
-          <Content className="min-h-full min-w-full">
+      <main className="flex flex-col items-center justify-between px-4 min-h-full min-w-full max-w-full">
+        <Layout className="min-w-full max-w-full">
+          <Content className="min-h-full min-w-full max-w-full">
             <Tabs
               activeKey={activeTab}
               onChange={setActiveTab}
-              className="w-full mx-auto min-h-full bg-white px-8 py-2 rounded-md"
+              className="w-full max-w-full mx-auto min-h-full bg-white px-8 py-2 rounded-md"
             >
               <TabPane tab="DB Chat" key="1">
                 <div
@@ -207,9 +208,9 @@ export default function DbChat() {
               <TabPane
                 tab="Data and SQL Console"
                 key="2"
-                className="max-w-full"
+                className="max-w-full w-full"
               >
-                <div className="flex flex-col justify-start items-center h-[calc(100vh-17rem)] max-h-[calc(100vh-17rem)] overflow-y-auto">
+                <div className="flex flex-col justify-start items-center h-[calc(100vh-17rem)] max-h-[calc(100vh-17rem)] overflow-auto w-full max-w-full">
                   <Resizable
                     defaultSize={{ width: '100%', height: '320' }}
                     enable={{
@@ -246,6 +247,8 @@ export default function DbChat() {
                   ) : (
                     <>
                       <Table
+                        scroll={{ x: 'max-content' }}
+                        className="w-full max-w-full overflow-auto"
                         dataSource={
                           queryResult?.rows?.map(
                             (row: Record<string, any>) => ({
@@ -257,7 +260,7 @@ export default function DbChat() {
                                     : value,
                                 ])
                               ),
-                              key: `${JSON.stringify(row)}`,
+                              key: v4(),
                             })
                           ) || []
                         }
@@ -265,10 +268,29 @@ export default function DbChat() {
                           title: field?.name,
                           dataIndex: field?.name,
                           key: field?.name,
-                          sorter: (a: any, b: any) =>
-                            a[field?.name] - b[field?.name],
+                          sorter: (a: any, b: any) => {
+                            const valueA = a[field?.name];
+                            const valueB = b[field?.name];
+
+                            // Check if the values are numeric strings
+                            const isNumericA = !isNaN(valueA);
+                            const isNumericB = !isNaN(valueB);
+
+                            if (isNumericA && isNumericB) {
+                              // If both values are numeric, compare them as numbers
+                              return parseFloat(valueA) - parseFloat(valueB);
+                            } else if (isNumericA) {
+                              // If only valueA is numeric, it comes before valueB
+                              return -1;
+                            } else if (isNumericB) {
+                              // If only valueB is numeric, it comes before valueA
+                              return 1;
+                            } else {
+                              // If neither value is numeric, compare them alphabetically
+                              return valueA.localeCompare(valueB);
+                            }
+                          },
                         }))}
-                        scroll={{ x: 'max-content' }}
                       />
                     </>
                   )}
