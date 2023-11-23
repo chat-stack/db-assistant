@@ -1,3 +1,5 @@
+[English](README.md) | [中文](README-zh-cn.md)
+
 ## Introduction
 DB Assistant is a SQL generator and console that knows your schema and entity relations. Powered by latest OpenAI Assistant API and GPT-4.
 
