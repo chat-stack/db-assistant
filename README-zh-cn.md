@@ -5,7 +5,7 @@
 ## 引言
 DB Assistant是一个SQL生成器和控制台，了解您的表结构和实体关系。由最新的OpenAI Assistant API和GPT-4提供动力。
 
-DB Assistant是一个使用最新的OpenAI Assistant API的Next.js应用，通过聊天提供SQL生成。DB Assistant将自动调用函数来获取您的表结构和关系，以生成基于您数据的更准确的SQL，优与普通班ChatGPT。
+DB Assistant是一个使用最新的OpenAI Assistant API的Next.js应用，通过聊天提供SQL生成。DB Assistant将自动调用函数来获取您的表结构和关系，以生成基于您数据的更准确的SQL，优与普通版本的ChatGPT。
 
 目前它仅支持Postgres SQL。
 
